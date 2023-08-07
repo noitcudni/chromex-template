@@ -1,4 +1,4 @@
-(ns bulk-slack-user-deactivation.content-script.core
+(ns {{name}}.content-script.core
   (:require-macros [cljs.core.async.macros :refer [go-loop]])
   (:require [cljs.core.async :refer [<! chan]]
             [chromex.logging :refer-macros [log info warn error group group-end]]

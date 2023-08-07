@@ -1,4 +1,4 @@
-(ns bulk-slack-user-deactivation.background.core
+(ns {{name}}.background.core
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [goog.string :as gstring]
             [goog.string.format]
