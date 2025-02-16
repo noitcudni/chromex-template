@@ -4,6 +4,7 @@
                  [org.clojure/core.async "0.4.500"]
                  [binaryage/chromex "0.8.6"]
                  [binaryage/devtools "0.9.10"]
+                 [com.cognitect/transit-cljs "0.8.256"]
                  [figwheel "0.5.19"]
                  [environ "1.1.0"]]
 

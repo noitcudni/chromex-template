@@ -8,42 +8,28 @@
             [chromex.protocols.chrome-port :refer [post-message! get-sender]]
             [chromex.ext.tabs :as tabs]
             [chromex.ext.runtime :as runtime]
+            [{{name}} .content-script.common :as common]
             [{{name}}.background.storage :refer [test-storage!]]))
 
-(def clients (atom []))
+(def curr-tab-id-atom (atom nil))
 
-; -- clients manipulation ---------------------------------------------------------------------------------------------------
-
-(defn add-client! [client]
-  (log "BACKGROUND: client connected" (get-sender client))
-  (swap! clients conj client))
-
-(defn remove-client! [client]
-  (log "BACKGROUND: client disconnected" (get-sender client))
-  (let [remove-item (fn [coll item] (remove #(identical? item %) coll))]
-    (swap! clients remove-item client)))
-
-; -- client event loop ------------------------------------------------------------------------------------------------------
-
-(defn run-client-message-loop! [client]
-  (log "BACKGROUND: starting event loop for client:" (get-sender client))
-  (go-loop []
-    (when-some [message (<! client)]
-      (log "BACKGROUND: got client message:" message "from" (get-sender client))
-      (recur))
-    (log "BACKGROUND: leaving event loop for client:" (get-sender client))
-    (remove-client! client)))
 
 ; -- event handlers ---------------------------------------------------------------------------------------------------------
+(defn handle-on-message [message]
+  (go
+    (let [{:keys [type] :as whole-edn} (common/unmarshall message)
+          _ (prn ">> handle-on-message" whole-edn)
+          ;; NOTE: to send a message to content script
+          ;; call (tabs/send-message @curr-tab-id-atom (common/marshall {:type :done-init-victims}))
+          ]
+      (cond
+        (= type :hello-world) (do
+                                (prn ">> got hello-world" whole-edn))
+        (= type :reset-tab-id) (do
+                                 (prn ">> storing new tab-id: " (:tab-id whole-edn))
+                                 (reset! curr-tab-id-atom (:tab-id whole-edn))))
+      )))
 
-(defn handle-client-connection! [client]
-  (add-client! client)
-  (post-message! client "hello from BACKGROUND PAGE!")
-  (run-client-message-loop! client))
-
-(defn tell-clients-about-new-tab! []
-  (doseq [client @clients]
-    (post-message! client "a new tab was created")))
 
 ; -- main event loop --------------------------------------------------------------------------------------------------------
 
@@ -51,8 +37,7 @@
   (log (gstring/format "BACKGROUND: got chrome event (%05d)" event-num) event)
   (let [[event-id event-args] event]
     (case event-id
-      ::runtime/on-connect (apply handle-client-connection! event-args)
-      ::tabs/on-created (tell-clients-about-new-tab!)
+      ::runtime/on-message (apply handle-on-message event-args)
       nil)))
 
 (defn run-chrome-event-loop! [chrome-event-channel]
@@ -65,8 +50,7 @@
 
 (defn boot-chrome-event-loop! []
   (let [chrome-event-channel (make-chrome-event-channel (chan))]
-    (tabs/tap-all-events chrome-event-channel)
-    (runtime/tap-all-events chrome-event-channel)
+    (runtime/tap-on-message-events chrome-event-channel)
     (run-chrome-event-loop! chrome-event-channel)))
 
 ; -- main entry point -------------------------------------------------------------------------------------------------------
