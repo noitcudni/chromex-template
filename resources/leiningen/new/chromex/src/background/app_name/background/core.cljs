@@ -9,7 +9,7 @@
             [chromex.ext.tabs :as tabs]
             [chromex.ext.runtime :as runtime]
             [{{name}}.content-script.common :as common]
-            [{{name}}.background.storage :refer [test-storage!]]))
+            ))
 
 (def curr-tab-id-atom (atom nil))
 
