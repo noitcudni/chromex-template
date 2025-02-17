@@ -4,7 +4,7 @@
             [chromex.logging :refer-macros [log info warn error group group-end]]
             [chromex.protocols.chrome-port :refer [post-message!]]
             [chromex.ext.runtime :as runtime :refer-macros [connect]]
-            [{{name}} .content-script.common :as common]
+            [{{name}}.content-script.common :as common]
             ))
 
 (defn handle-on-message [message send-response]

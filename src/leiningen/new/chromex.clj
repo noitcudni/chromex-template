@@ -48,5 +48,6 @@
              ["src/popup/{{sanitized}}/popup/core.cljs" (render "src/popup/app_name/popup/core.cljs" data)]
              ["src/popup/{{sanitized}}/popup.cljs" (render "src/popup/app_name/popup.cljs" data)]
              ["src/content_script/{{sanitized}}/content_script/core.cljs" (render "src/content_script/app_name/content_script/core.cljs" data)]
+             ["src/content_script/{{sanitized}}/content_script/common.cljs" (render "src/content_script/app_name/content_script/common.cljs" data)]
              ["src/content_script/{{sanitized}}/content_script.cljs" (render "src/content_script/app_name/content_script.cljs" data)]
              )))
