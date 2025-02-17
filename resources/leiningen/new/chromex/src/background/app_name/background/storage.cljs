@@ -5,24 +5,29 @@
             [chromex.protocols.chrome-storage-area :refer [get set]]
             [chromex.ext.storage :as storage]))
 
-(defn test-storage! []
+(defn store-local-storage [k]
+  (fn [v]
+    (let [local-storage (storage/get-local)]
+     (go
+       (storage-area/set local-storage (clj->js {k v})))
+     )))
+
+(defn get-local-storage [k]
+  (fn []
+    (let [local-storage (storage/get-local)]
+      (go
+        (let [[[items] error] (<! (storage-area/get local-storage k))]
+          (-> items js->clj (get k))
+          )))))
+
+(defn remove-local-storage [k]
+  (fn []
+    (let [local-storage (storage/get-local)]
+      (go
+        (<! (storage-area/remove local-storage k)))
+      )))
+
+(defn clear-storage []
   (let [local-storage (storage/get-local)]
-    (set local-storage #js {"key1" "string"
-                            "key2" #js [1 2 3]
-                            "key3" true
-                            "key4" nil})
     (go
-      (let [[[items] error] (<! (get local-storage))]
-        (if error
-          (error "fetch all error:" error)
-          (log "fetch all:" items))))
-    (go
-      (let [[[items] error] (<! (get local-storage "key1"))]
-        (if error
-          (error "fetch key1 error:" error)
-          (log "fetch key1:" items))))
-    (go
-      (let [[[items] error] (<! (get local-storage #js ["key2" "key3"]))]
-        (if error
-          (error "fetch key2 and key3 error:" error)
-          (log "fetch key2 and key3:" items))))))
+      (<! (storage-area/clear local-storage)))))
